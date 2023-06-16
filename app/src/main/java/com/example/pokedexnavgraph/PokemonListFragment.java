@@ -3,20 +3,25 @@ package com.example.pokedexnavgraph;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.lifecycle.ViewModelStore;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.pokedexnavgraph.placeholder.MyRecyclerViewAdapter;
 import com.example.pokedexnavgraph.placeholder.PlaceholderContent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -37,6 +42,7 @@ public class PokemonListFragment extends Fragment {
    // pokListViewModel viewModel;
     pokListViewModel viewModel;
     String string;
+    pokListViewModel userModel;
     public PokemonListFragment() {
     }
 
@@ -70,8 +76,10 @@ public class PokemonListFragment extends Fragment {
        // final ViewModel UserModel = viewModel = ViewModelProviders.of(this).get(UserModel.class);
 
 
-        pokListViewModel userModel = ViewModelProviders.of(getActivity()).get(pokListViewModel.class);
+         userModel = ViewModelProviders.of(getActivity()).get(pokListViewModel.class);
         int number = userModel.getScoreTeamA();
+
+
 
 
        // ViewModelStore viewModelStore;
@@ -102,18 +110,47 @@ public class PokemonListFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
+
+            List<String> pokemonList = userModel.getPokemonArrayList();
+            Log.e("Pokemon List", String.valueOf(pokemonList));
+
+            PlaceholderContent object_name = new PlaceholderContent();
+
+
+
             RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            //Log.e("Items para enviar,", String.valueOf(items));
+            MyRecyclerViewAdapter adapter = new MyRecyclerViewAdapter(getActivity(), pokemonList);
+            recyclerView.setAdapter(adapter);
+
+            MyRecyclerViewAdapter.ItemClickListener listener = new MyRecyclerViewAdapter.ItemClickListener() {
+                @Override
+                public void onItemClick(View view, int position) {
+
+                    Log.e("Position","" + position + " ," +  pokListViewModel.getPokemonArrayListPositionElement(position));
 
 
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new PokemonListRecyclerViewAdapter(PlaceholderContent.ITEMS));
+                    userModel = ViewModelProviders.of(getActivity()).get(pokListViewModel.class);
+                    userModel.setSelectedPolkemonInList(pokListViewModel.getPokemonArrayListPositionElement(position), position);
+
+
+                    NavHostFragment.findNavController(PokemonListFragment.this)
+                            .navigate(R.id.PokemonListFragment_to_SecondFragment);
+                }
+            };
+
+            adapter.setClickListener( listener);
+
+
+
+
         }
+
         return view;
     }
+
+
 
 
 

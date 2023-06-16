@@ -3,6 +3,16 @@ package com.example.pokedexnavgraph;
 import android.app.Application;
 import android.os.Bundle;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
@@ -25,6 +35,14 @@ import com.example.pokedexnavgraph.databinding.ActivityMainBinding;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -32,6 +50,22 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
 
     pokListViewModel viewModel;
+
+
+
+    //Pokemon API Elements
+    // POkemon Array
+    String pokemonList="";
+    String pokemonListString;
+    List<String> items = new ArrayList<>();
+    JSONArray pokemonArrayList ;
+
+    JSONObject selectedPokemon;
+
+    String selectedPokemonString="";
+    JSONArray pokemonArraySelectedPokemonSprites ;
+
+
 
 
 
@@ -51,6 +85,12 @@ public class MainActivity extends AppCompatActivity {
         Log.e("Score Team A", "" + viewModel.getScoreTeamA()  );
         viewModel.setScoreTeamA(5000);
 
+        Log.e("Score Team A", "" + viewModel.getScoreTeamA()  );
+
+        httpCall ("pokemonList", "");
+
+
+
 
 
 
@@ -67,7 +107,9 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-              //  navController.navigate(R.id.action_FirstFragment_to_SecondFragment);
+
+
+                //  navController.navigate(R.id.action_FirstFragment_to_SecondFragment);
 
             }
         });
@@ -107,8 +149,185 @@ public class MainActivity extends AppCompatActivity {
         int scoreTeamA = viewModel.scoreTeamA;
     }
 
+    public void httpCall (String callStyle, String selectedPokemon)
+    {
+        Log.e("Callstyle",callStyle);
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL = "";
+
+        if(callStyle=="pokemonList")
+        {
+             URL = "https://pokeapi.co/api/v2/pokemon";
+
+        }
+        else if (callStyle=="pokemonInfo" && selectedPokemon!=null )
+        {
+            URL = "https://pokeapi.co/api/v2/pokemon/" + selectedPokemon;
+
+        }
+        JSONObject jsonBody = new JSONObject();
+        final String requestBody = jsonBody.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.i("VOLLEY", response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("VOLLEY error", error.toString());
+            }
+        }) {
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+
+                Log.e("VOLLEY getBody", "");
+
+                try {
+
+
+
+                    Log.e("VOLLEY Body", requestBody);
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+
+
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    Log.e("VOLLEY Body Error", String.valueOf(uee));
+
+
+
+
+
+                    return null;
+                }
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(response.statusCode);
+                    // can get more details such as response.headers
+
+                    try {
+                        String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+                        Log.e("VOLLEY Network", String.valueOf(json));
+
+
+                        if(callStyle=="pokemonList")
+                        {
+                            pokemonList=json;
+                            buildJson();
+
+                        }
+                        else if (callStyle=="pokemonInfo" && selectedPokemon!=null )
+                        {
+
+
+                           selectedPokemonString=json;
+                            buildPokemonJson();
+
+
+
+
+
+
+
+
+
+                        }
+
+
+
+
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
+
+                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
+
+        requestQueue.add(stringRequest);
+    }
+
+    public void buildJson()
+    {
+
+        try {
+            JSONObject root = new JSONObject(pokemonList);
+
+
+            JSONArray array= root.getJSONArray("results");
+
+            pokemonArrayList = array;
+
+            Log.e("Pokemon Array", String.valueOf(array));
+            pokemonListString=String.valueOf(array);
+
+            for(int i=0;i<array.length();i++)
+            {
+                JSONObject object= array.getJSONObject(i);
+                items.add(object.getString("name"));
+            }
+
+            Log.e("Items", String.valueOf(items));
+           // buildRecyclerView();
+
+
+            viewModel.setPokemonArrayList((ArrayList<String>) items);
+            Log.e("Pokemon Array in Seter ViewModel", String.valueOf(items));
+
+            pokListViewModel.setPokemonJsonList(array);
+
+
+
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+
+        }
+    }
+
+    public void buildPokemonJson()
+    {
+
+        Log.e("buildPokemonJson","");
+        try {
+            JSONObject selectedPokemon = new JSONObject(selectedPokemonString);
+            //JSONArray array= selectedPokemon.getJSONArray("sprites");
+
+
+            JSONObject selectedPokemonSprite = selectedPokemon.getJSONObject("sprites");
+
+            Log.e("Pokemon Array", String.valueOf(selectedPokemonSprite));
+
+            String pokemonSpriteURL = selectedPokemonSprite.getString("back_default");
+            Log.e("Pokemon sprite URL", pokemonSpriteURL);
+
+
+            viewModel.setSelectedPokemonURL(pokemonSpriteURL);
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
 }
 
+/*
 class ScoreViewModel extends ViewModel {
     // Tracks the score for Team A
     public int scoreTeamA = 2000;
@@ -124,7 +343,12 @@ class ScoreViewModel extends ViewModel {
     public int getScoreTeamA() {
         return scoreTeamA;
     }
+
+
+
 }
+*/
+
 
 
 

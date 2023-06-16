@@ -1,11 +1,11 @@
 package com.example.pokedexnavgraph;
 
-import android.service.autofill.UserData;
+import android.util.Log;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.google.firebase.firestore.auth.User;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
 
@@ -18,7 +18,21 @@ public class pokListViewModel extends ViewModel {
     // Tracks the score for Team B
     public int scoreTeamB = 0;
 
-    public ArrayList<String> pokemonArrayList = new ArrayList<>();
+    pokListViewModel userModel;
+
+    public String selectedPolkemonInList;
+
+    public String getSelectedPolkemonInList() {
+        return selectedPolkemonInList;
+    }
+
+    public static ArrayList<String> pokemonArrayList = new ArrayList<>();
+    public static JSONArray pokemonJsonList = new JSONArray();
+
+    public String selectedPokemonURL;
+
+
+
 
     public ArrayList<String> getPokemonArrayList() {
         return pokemonArrayList;
@@ -40,5 +54,44 @@ public class pokListViewModel extends ViewModel {
         this.scoreTeamA = scoreTeamA;
     }
 
+    public void setPokemonArrayList(ArrayList<String> pokemonArrayList) {
+        this.pokemonArrayList = pokemonArrayList;
+    }
 
+    public static void setPokemonJsonList(JSONArray pokemonJsonList) {
+        pokListViewModel.pokemonJsonList = pokemonJsonList;
+    }
+
+    public static String getPokemonArrayListPositionElement(int position)
+    {
+
+
+        return pokemonArrayList.get(position);
+
+
+    }
+
+    public void setSelectedPolkemonInList(String selectedPolkemonInList, int position) {
+        this.selectedPolkemonInList = selectedPolkemonInList;
+
+
+        try {
+           // pokemonJsonList.getJSONObject(position);
+            Log.e("Pokemon Full Data"," " + pokemonJsonList.getJSONObject(position));
+
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    public void setSelectedPokemonURL(String selectedPokemonURL) {
+
+        this.selectedPokemonURL = selectedPokemonURL;
+    }
+
+    public String getSelectedPokemonURL() {
+        return selectedPokemonURL;
+    }
 }

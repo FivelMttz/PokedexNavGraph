@@ -6,10 +6,31 @@
     android:layout_height="match_parent"
     tools:context=".SecondFragment">
 
+
+    <ImageView
+        android:id="@+id/image_viewPokemon"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:background="@color/black"
+        app:layout_constraintBottom_toTopOf="@id/button_second"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/pokemonName"
+        app:layout_constraintBottom_toTopOf="@+id/button_second"
+        app:layout_constraintTop_toBottomOf="@+id/image_viewPokemon"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="0dp"></TextView>
+
     <TextView
         android:id="@+id/textview_second"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/button_second"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
